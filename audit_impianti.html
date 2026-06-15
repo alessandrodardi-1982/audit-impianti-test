@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Impianti — Termoflex Srl</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #2ca1fe;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --green: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #0d1829 0%, #0a1520 50%, #0d1829 100%); border-bottom: 1px solid var(--border); padding: 22px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #10b981, #2ca1fe); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .brand-name { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 2px; }
+  .brand-title { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .nav-tab.active { background: rgba(44,161,254,0.12); border-color: var(--accent); color: var(--accent); }
+
+  .work-note { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 8px; padding: 10px 16px; font-size: 12px; color: var(--warn); margin: 20px 40px 0; display: flex; align-items: flex-start; gap: 8px; }
+
+  /* VIEWS */
+  .view { display: none; padding: 28px 40px; }
+  .view.active { display: block; }
+
+  /* SECTION TITLE */
+  .section-title { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+  .card-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* FORM SETUP */
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 500; color: var(--text-dim); }
+  .field input, .field select, .field textarea { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 14px; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field select option { background: #1a2235; }
+  .field textarea { resize: vertical; min-height: 70px; }
+
+  /* TIPO IMPIANTO SELECTOR */
+  .tipo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tipo-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .tipo-card:hover { border-color: var(--accent); }
+  .tipo-card.active { border-color: var(--accent); background: rgba(44,161,254,0.08); }
+  .tipo-icon { font-size: 28px; margin-bottom: 8px; }
+  .tipo-nome { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+  .tipo-desc { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* CHECKLIST */
+  .checklist-section { margin-bottom: 20px; }
+  .checklist-section-title { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .check-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 14px; }
+  .check-item.ok { border-color: rgba(16,185,129,0.3); }
+  .check-item.warn { border-color: rgba(245,158,11,0.3); }
+  .check-item.ko { border-color: rgba(239,68,68,0.3); }
+  .check-label { flex: 1; }
+  .check-text { font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 6px; }
+  .check-note { font-size: 12px; color: var(--text-muted); font-style: italic; }
+  .check-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .check-opt { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .check-opt:hover { border-color: var(--accent); }
+  .check-opt.sel-ok { background: rgba(16,185,129,0.15); border-color: var(--green); color: var(--green); }
+  .check-opt.sel-warn { background: rgba(245,158,11,0.12); border-color: var(--warn); color: var(--warn); }
+  .check-opt.sel-ko { background: rgba(239,68,68,0.12); border-color: var(--danger); color: var(--danger); }
+  .check-obs { margin-top: 8px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 6px 10px; }
+  .check-obs:focus { outline: none; border-color: var(--accent); }
+
+  /* PUNTEGGIO */
+  .score-bar-wrap { background: var(--surface2); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 18px; }
+  .score-label { font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text-dim); white-space: nowrap; }
+  .score-track { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+  .score-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 500; white-space: nowrap; }
+  .score-stato { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 4px; white-space: nowrap; }
+  .stato-verde { color: var(--green); background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); }
+  .stato-giallo { color: var(--warn); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); }
+  .stato-rosso { color: var(--danger); background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); }
+
+  /* BUTTONS */
+  .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--accent), #1a7fd4); color: white; border: none; border-radius: 10px; padding: 13px 26px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(44,161,254,0.35); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); padding: 10px 18px; font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* VERBALE OUTPUT */
+  .verbale { display: none; }
+  .verbale-header { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 26px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; }
+  .verbale-titolo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .verbale-meta { font-size: 13px; color: var(--text-muted); }
+  .verbale-numero { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); background: rgba(44,161,254,0.08); border: 1px solid rgba(44,161,254,0.2); border-radius: 6px; padding: 6px 12px; }
+
+  .verdict-card { border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .verdict-verde { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); }
+  .verdict-giallo { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); }
+  .verdict-rosso { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); }
+  .verdict-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .verdict-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+
+  .ai-disclaimer { background: rgba(44,161,254,0.06); border: 1px solid rgba(44,161,254,0.15); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; margin-bottom: 16px; }
+  .error-box { display: none; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: var(--danger); margin-top: 12px; }
+
+  /* CRUSCOTTO STORICO */
+  .storico-empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+  .storico-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .storico-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .storico-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .storico-impianto { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); }
+  .storico-data { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .storico-cliente { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+  .storico-score { display: flex; align-items: center; gap: 10px; }
+  .storico-score-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .storico-score-fill { height: 100%; border-radius: 3px; }
+  .storico-score-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+  .storico-actions { margin-top: 10px; display: flex; gap: 6px; }
+  .storico-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 4px 10px; font-size: 11px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .storico-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* KPI STRIP CRUSCOTTO */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .kpi { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+  .kpi-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+  .kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 500; line-height: 1; }
+  .kpi-accent { border-top: 2px solid var(--accent); }
+  .kpi-green { border-top: 2px solid var(--green); }
+  .kpi-warn { border-top: 2px solid var(--warn); }
+  .kpi-danger { border-top: 2px solid var(--danger); }
+
+  @media (max-width: 768px) {
+    .header, .view { padding-left: 18px; padding-right: 18px; }
+    .work-note { margin-left: 18px; margin-right: 18px; }
+    .setup-grid, .tipo-grid, .kpi-strip { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    .header, .nav-tabs, .work-note, .btn-row, .ai-disclaimer, .nav-tab, .check-options, .check-obs { display: none !important; }
+    .view { padding: 0; }
+    body { background: white; color: black; }
+    .card, .verbale-header, .verdict-card { border: 1px solid #ddd; background: white; }
+    .verbale-titolo, .card-title { color: black; }
+    .verbale-meta, .storico-data, .storico-cliente { color: #555; }
+    .verdict-text { color: #222; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-icon">🔍</div>
+    <div>
+      <div class="brand-name">Termoflex Srl · Bologna</div>
+      <div class="brand-title">Audit Impianti</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('audit')">Nuova ispezione</button>
+    <button class="nav-tab" onclick="showView('storico')">Storico audit</button>
+  </div>
+</div>
+
+<div class="work-note">
+  <span>⚠</span>
+  <span><strong>Strumento dimostrativo</strong> — Scenario fittizio Termoflex Srl. Il verbale è generato da AI e deve essere revisionato dal tecnico prima della consegna al cliente.</span>
+</div>
+
+<!-- VIEW: NUOVA ISPEZIONE -->
+<div class="view active" id="view-audit">
+
+  <!-- STEP 1: SETUP -->
+  <div id="step-setup">
+    <div class="section-title">Dati ispezione</div>
+    <div class="card">
+      <div class="setup-grid">
+        <div class="field">
+          <label>Cliente / Impianto</label>
+          <input type="text" id="audit-cliente" placeholder="Es. Metalflex Srl — Castelmaggiore">
+        </div>
+        <div class="field">
+          <label>Tecnico ispettore</label>
+          <input type="text" id="audit-tecnico" placeholder="Es. Marco Ferretti">
+        </div>
+        <div class="field">
+          <label>Data ispezione</label>
+          <input type="date" id="audit-data">
+        </div>
+        <div class="field">
+          <label>Ore macchina (se disponibile)</label>
+          <input type="text" id="audit-ore" placeholder="Es. 4.320 ore">
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div class="field">
+          <label style="margin-bottom:10px;">Tipo impianto</label>
+          <div class="tipo-grid">
+            <div class="tipo-card active" id="tipo-compressore" onclick="setTipo('compressore')">
+              <div class="tipo-icon">💨</div>
+              <div class="tipo-nome">Compressore</div>
+              <div class="tipo-desc">Aria compressa, rotativo/a vite</div>
+            </div>
+            <div class="tipo-card" id="tipo-frigo" onclick="setTipo('frigo')">
+              <div class="tipo-icon">❄️</div>
+              <div class="tipo-nome">Gruppo frigo</div>
+              <div class="tipo-desc">Refrigerazione, chiller, pompa calore</div>
+            </div>
+            <div class="tipo-card" id="tipo-meccanico" onclick="setTipo('meccanico')">
+              <div class="tipo-icon">⚙️</div>
+              <div class="tipo-nome">Impianto meccanico</div>
+              <div class="tipo-desc">Pompe, trasmissioni, circuiti idraulici</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="avviaChecklist()">Avvia ispezione →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: CHECKLIST -->
+  <div id="step-checklist" style="display:none;">
+    <div class="section-title" id="checklist-title">Checklist ispezione</div>
+
+    <div class="score-bar-wrap">
+      <span class="score-label">Punteggio impianto</span>
+      <div class="score-track"><div class="score-fill" id="score-fill" style="width:0%;background:var(--green)"></div></div>
+      <span class="score-value" id="score-value" style="color:var(--text-muted)">—</span>
+      <span class="score-stato" id="score-stato"></span>
+    </div>
+
+    <div id="checklist-container"></div>
+
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-primary" id="genera-btn" onclick="generaVerbale()">
+        <span id="gen-icon">🤖</span>
+        <span id="gen-spin" class="spinner"></span>
+        <span id="gen-txt">Genera verbale AI</span>
+      </button>
+      <button class="btn-secondary" onclick="tornaSetup()">← Ricomincia</button>
+    </div>
+    <div class="error-box" id="error-box">⚠ Errore nella generazione. Verifica la connessione e riprova.</div>
+  </div>
+
+  <!-- STEP 3: VERBALE -->
+  <div id="step-verbale" style="display:none;">
+    <div class="verbale" id="verbale-output">
+
+      <div class="verbale-header">
+        <div>
+          <div style="font-family:'Sora',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Termoflex Srl — Verbale di Audit</div>
+          <div class="verbale-titolo" id="verb-titolo">—</div>
+          <div class="verbale-meta" id="verb-meta">—</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <div class="verbale-numero" id="verb-numero">AUD-—</div>
+          <div id="verb-stato-badge"></div>
+        </div>
+      </div>
+
+      <div class="verdict-card" id="verdict-card">
+        <div class="verdict-title" id="verdict-title">—</div>
+        <div class="verdict-text" id="verdict-text">—</div>
+      </div>
+
+      <div class="card" id="criticita-card" style="display:none;">
+        <div class="card-title"><span class="dot" style="background:var(--danger)"></span>Criticità rilevate</div>
+        <div id="criticita-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Raccomandazioni operative</div>
+        <div class="verdict-text" id="raccomandazioni-text">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--text-muted)"></span>Riepilogo ispezione</div>
+        <div id="riepilogo-voci" style="font-size:13px;color:var(--text-dim);line-height:1.8;"></div>
+      </div>
+
+      <div class="ai-disclaimer">
+        <span>🤖</span>
+        <span>Verbale generato da Claude (claude-sonnet-4-6) sulla base delle risposte alla checklist. Il tecnico deve revisionare e firmare prima della consegna al cliente.</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="stampa()">🖨 Stampa / Salva PDF</button>
+        <button class="btn-secondary" onclick="nuovaIspezione()">↩ Nuova ispezione</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- VIEW: STORICO -->
+<div class="view" id="view-storico">
+  <div class="section-title">Cruscotto audit</div>
+  <div class="kpi-strip" id="storico-kpi">
+    <div class="kpi kpi-accent"><div class="kpi-label">Audit totali</div><div class="kpi-value" id="kpi-tot">0</div></div>
+    <div class="kpi kpi-green"><div class="kpi-label">Stato verde</div><div class="kpi-value" id="kpi-verde" style="color:var(--green)">0</div></div>
+    <div class="kpi kpi-warn"><div class="kpi-label">Stato giallo</div><div class="kpi-value" id="kpi-giallo" style="color:var(--warn)">0</div></div>
+    <div class="kpi kpi-danger"><div class="kpi-label">Stato rosso</div><div class="kpi-value" id="kpi-rosso" style="color:var(--danger)">0</div></div>
+  </div>
+  <div class="section-title">Audit completati</div>
+  <div id="storico-container"><div class="storico-empty">Nessun audit completato. Avvia una nuova ispezione.</div></div>
+</div>
+
+<script>
+// ─── CHECKLIST DATI ────────────────────────────────────────
+const CHECKLIST = {
+  compressore: [
+    { sezione: "Stato generale", voci: [
+      { id: "c1", testo: "Presenza di perdite d'olio visibili (carter, separatore, raccordi)", note: "Verificare sul pavimento e sulle superfici del corpo macchina" },
+      { id: "c2", testo: "Livello olio lubrificante nel serbatoio", note: "Controllare l'indicatore visivo con macchina ferma da 5 min" },
+      { id: "c3", testo: "Stato e tensione cinghie di trasmissione", note: "Deflessione max 10-15mm a metà cinghia con pressione di 3kg" },
+      { id: "c4", testo: "Rumorosità anomala durante il funzionamento", note: "Cigolii, battiti, rumori metallici" }
+    ]},
+    { sezione: "Filtri e separatori", voci: [
+      { id: "c5", testo: "Stato filtro aria (indicatore di intasamento)", note: "Sostituire se indicatore rosso o oltre 2.000 ore" },
+      { id: "c6", testo: "Differenziale di pressione sul separatore olio/aria", note: "Oltre 0,8 bar ΔP indica separatore da sostituire" },
+      { id: "c7", testo: "Stato filtro olio (data ultima sostituzione)", note: "Sostituzione ogni 1.000-2.000 ore o annuale" }
+    ]},
+    { sezione: "Parametri operativi", voci: [
+      { id: "c8", testo: "Pressione di esercizio nella norma (range impostato)", note: "Verificare coerenza con setpoint e pressostato" },
+      { id: "c9", testo: "Temperatura di esercizio nella norma", note: "Allarme sopra 100°C — verificare pulizia condensatore/scambiatore" },
+      { id: "c10", testo: "Valvola di sicurezza intatta e non bloccata", note: "Non deve presentare corrosione o segni di scarico pregresso" }
+    ]},
+    { sezione: "Essiccatore e rete", voci: [
+      { id: "c11", testo: "Funzionamento essiccatore (punto di rugiada)", note: "Punto di rugiada target: -20°C / +3°C a seconda del tipo" },
+      { id: "c12", testo: "Presenza di condensa in rete — scaricatori funzionanti", note: "Verificare scaricatori automatici sulle trappole" }
+    ]}
+  ],
+  frigo: [
+    { sezione: "Stato generale", voci: [
+      { id: "f1", testo: "Presenza di perdite di gas refrigerante visibili (olio sui raccordi)", note: "Macchie oleose su raccordi e valvole indicano perdita" },
+      { id: "f2", testo: "Stato del condensatore — pulizia alette", note: "Alette ostruite da polvere/pelucchi aumentano la pressione di condensazione" },
+      { id: "f3", testo: "Rumorosità anomala del compressore frigo", note: "Battiti a freddo, cigolii, variazioni di frequenza anomale" }
+    ]},
+    { sezione: "Parametri frigoriferi", voci: [
+      { id: "f4", testo: "Pressione lato alta (condensazione) nei limiti", note: "R-410A: 20-28 bar; R-32: 22-30 bar in condizioni standard" },
+      { id: "f5", testo: "Pressione lato bassa (evaporazione) nei limiti", note: "Pressione bassa eccessiva indica perdita gas o valvola termostatica" },
+      { id: "f6", testo: "Surriscaldamento e sottoraffreddamento nella norma", note: "Surriscaldamento target: 5-10K; sottoraffreddamento: 3-8K" }
+    ]},
+    { sezione: "Componenti", voci: [
+      { id: "f7", testo: "Valvola termostatica di espansione funzionante", note: "Oscillazioni di temperatura anomale all'evaporatore indicano problemi" },
+      { id: "f8", testo: "Stato motori ventilatori condensatore ed evaporatore", note: "Verificare assorbimento, vibrazioni, senso di rotazione" },
+      { id: "f9", testo: "Resistenze di sbrinamento funzionanti (se presenti)", note: "Verifica visiva: formazione ghiaccio eccessiva indica sbrinamento inefficace" }
+    ]},
+    { sezione: "Sicurezze", voci: [
+      { id: "f10", testo: "Pressostato alta pressione calibrato e funzionante", note: "Test simulando aumento pressione — deve intervenire entro il setpoint" },
+      { id: "f11", testo: "Stato coibentazione tubazioni lato freddo", note: "Coibentazione deteriorata causa perdite termiche e condensa" }
+    ]}
+  ],
+  meccanico: [
+    { sezione: "Stato generale", voci: [
+      { id: "m1", testo: "Perdite di fluido (olio, acqua, liquido idraulico) visibili", note: "Verificare guarnizioni, premistoppa, raccordi" },
+      { id: "m2", testo: "Rumorosità anomala (cuscinetti, cavitazione, vibrazioni)", note: "Rilevare con fonendoscopio meccanico se disponibile" },
+      { id: "m3", testo: "Temperatura superficiale di cuscinetti e corpo pompa", note: "Temperatura cuscinetti: max 70°C; oltre 80°C è anomalo" }
+    ]},
+    { sezione: "Componenti meccanici", voci: [
+      { id: "m4", testo: "Stato tenuta meccanica (assenza perdite dal premistoppa)", note: "Gocciolamento lento accettabile; perdita continua indica sostituzione" },
+      { id: "m5", testo: "Allineamento albero e accoppiamento", note: "Disallineamento causa vibrazioni, usura precoce cuscinetti, rottura albero" },
+      { id: "m6", testo: "Stato e lubrificazione cuscinetti", note: "Verificare data ultima lubrificazione e stato grasso/olio" }
+    ]},
+    { sezione: "Parametri operativi", voci: [
+      { id: "m7", testo: "Portata e pressione nei valori nominali", note: "Calo di portata indica usura girante, ostruzione o perdita di tenuta" },
+      { id: "m8", testo: "Assorbimento elettrico nei limiti di targa", note: "Sovra-assorbimento indica ostruzione o problemi meccanici" },
+      { id: "m9", testo: "Valvole di intercettazione funzionanti e non in perdita", note: "Verificare apertura/chiusura completa e assenza perdite sullo stelo" }
+    ]},
+    { sezione: "Circuito", voci: [
+      { id: "m10", testo: "Stato filtri a Y o cesti sull'aspirazione", note: "Filtri intasati riducono portata e aumentano cavitazione" },
+      { id: "m11", testo: "Vasi di espansione pressurizzati correttamente", note: "Pressione pre-carica deve essere 0,5 bar inferiore alla pressione statica" }
+    ]}
+  ]
+};
+
+const OPZIONI = [
+  { label: 'OK', cls: 'sel-ok', val: 'ok', score: 2 },
+  { label: 'Da monitorare', cls: 'sel-warn', val: 'warn', score: 1 },
+  { label: 'Critico', cls: 'sel-ko', val: 'ko', score: 0 },
+  { label: 'N/A', cls: '', val: 'na', score: null }
+];
+
+let tipoAttivo = 'compressore';
+let risposte = {};
+let storicoAudit = [];
+let contatore = Math.floor(Math.random() * 800) + 100;
+
+// ─── NAVIGAZIONE ───────────────────────────────────────────
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  event.target.classList.add('active');
+  if (v === 'storico') renderStorico();
+}
+
+function setTipo(t) {
+  tipoAttivo = t;
+  ['compressore','frigo','meccanico'].forEach(x => document.getElementById('tipo-' + x).classList.remove('active'));
+  document.getElementById('tipo-' + t).classList.add('active');
+}
+
+// ─── SETUP → CHECKLIST ─────────────────────────────────────
+function avviaChecklist() {
+  const oggi = new Date().toISOString().split('T')[0];
+  if (!document.getElementById('audit-data').value) document.getElementById('audit-data').value = oggi;
+
+  risposte = {};
+  const checklist = CHECKLIST[tipoAttivo];
+  const nomiTipo = { compressore: 'Compressore aria compressa', frigo: 'Gruppo frigo / Chiller', meccanico: 'Impianto meccanico' };
+  document.getElementById('checklist-title').textContent = `Checklist — ${nomiTipo[tipoAttivo]}`;
+
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+
+  checklist.forEach(sez => {
+    const sezDiv = document.createElement('div');
+    sezDiv.className = 'checklist-section';
+    sezDiv.innerHTML = `<div class="checklist-section-title">${sez.sezione}</div>`;
+
+    sez.voci.forEach(voce => {
+      const item = document.createElement('div');
+      item.className = 'check-item';
+      item.id = 'item-' + voce.id;
+      item.innerHTML = `
+        <div class="check-label">
+          <div class="check-text">${voce.testo}</div>
+          ${voce.note ? `<div class="check-note">${voce.note}</div>` : ''}
+          <div class="check-options" style="margin-top:8px;">
+            ${OPZIONI.map(o => `<button class="check-opt" onclick="seleziona('${voce.id}','${o.val}',this,'${o.cls}')">${o.label}</button>`).join('')}
+          </div>
+          <input class="check-obs" type="text" placeholder="Note tecniche (opzionale)" oninput="aggiornaNote('${voce.id}',this.value)">
+        </div>`;
+      sezDiv.appendChild(item);
+    });
+
+    container.appendChild(sezDiv);
+  });
+
+  document.getElementById('step-setup').style.display = 'none';
+  document.getElementById('step-checklist').style.display = 'block';
+  aggiornaScore();
+}
+
+function seleziona(id, val, btn, cls) {
+  const opts = btn.closest('.check-options').querySelectorAll('.check-opt');
+  opts.forEach(o => { o.className = 'check-opt'; });
+  btn.classList.add(cls || 'sel-ok');
+
+  risposte[id] = risposte[id] || {};
+  risposte[id].val = val;
+
+  const item = document.getElementById('item-' + id);
+  item.className = 'check-item';
+  if (val === 'ok') item.classList.add('ok');
+  else if (val === 'warn') item.classList.add('warn');
+  else if (val === 'ko') item.classList.add('ko');
+
+  aggiornaScore();
+}
+
+function aggiornaNote(id, val) {
+  risposte[id] = risposte[id] || {};
+  risposte[id].note = val;
+}
+
+function aggiornaScore() {
+  const checklist = CHECKLIST[tipoAttivo];
+  let totPunti = 0, maxPunti = 0, risposte_date = 0;
+
+  checklist.forEach(sez => sez.voci.forEach(v => {
+    const r = risposte[v.id];
+    if (r && r.val && r.val !== 'na') {
+      const opt = OPZIONI.find(o => o.val === r.val);
+      if (opt && opt.score !== null) { totPunti += opt.score; maxPunti += 2; risposte_date++; }
+    }
+  }));
+
+  if (maxPunti === 0) {
+    document.getElementById('score-value').textContent = '—';
+    document.getElementById('score-value').style.color = 'var(--text-muted)';
+    document.getElementById('score-fill').style.width = '0%';
+    document.getElementById('score-stato').textContent = '';
+    return;
+  }
+
+  const pct = Math.round((totPunti / maxPunti) * 100);
+  document.getElementById('score-value').textContent = pct + '%';
+
+  let colore, stato, statoClass;
+  if (pct >= 75) { colore = 'var(--green)'; stato = '✓ Buono'; statoClass = 'stato-verde'; }
+  else if (pct >= 45) { colore = 'var(--warn)'; stato = '⚡ Da monitorare'; statoClass = 'stato-giallo'; }
+  else { colore = 'var(--danger)'; stato = '⛔ Critico'; statoClass = 'stato-rosso'; }
+
+  document.getElementById('score-value').style.color = colore;
+  document.getElementById('score-fill').style.width = pct + '%';
+  document.getElementById('score-fill').style.background = colore;
+  const statoEl = document.getElementById('score-stato');
+  statoEl.textContent = stato;
+  statoEl.className = 'score-stato ' + statoClass;
+}
+
+// ─── GENERA VERBALE AI ─────────────────────────────────────
+async function generaVerbale() {
+  const btn = document.getElementById('genera-btn');
+  const icon = document.getElementById('gen-icon');
+  const spin = document.getElementById('gen-spin');
+  const txt = document.getElementById('gen-txt');
+  const errBox = document.getElementById('error-box');
+
+  btn.disabled = true; icon.style.display = 'none'; spin.style.display = 'block';
+  txt.textContent = 'Generazione verbale…'; errBox.style.display = 'none';
+
+  const cliente = document.getElementById('audit-cliente').value || 'Cliente non specificato';
+  const tecnico = document.getElementById('audit-tecnico').value || 'Tecnico non specificato';
+  const data = document.getElementById('audit-data').value || new Date().toISOString().split('T')[0];
+  const ore = document.getElementById('audit-ore').value || 'non rilevate';
+  const nomiTipo = { compressore: 'Compressore aria compressa', frigo: 'Gruppo frigo / Chiller', meccanico: 'Impianto meccanico' };
+
+  // Calcola score per il prompt
+  const checklist = CHECKLIST[tipoAttivo];
+  let totPunti = 0, maxPunti = 0;
+  const vociRisposte = [];
+  const criticita = [];
+
+  checklist.forEach(sez => sez.voci.forEach(v => {
+    const r = risposte[v.id];
+    const val = r ? r.val : 'non_verificato';
+    const note = r ? r.note || '' : '';
+    const opt = OPZIONI.find(o => o.val === val);
+    if (opt && opt.score !== null) { totPunti += opt.score; maxPunti += 2; }
+    if (val === 'ko') criticita.push(`CRITICO: ${v.testo}${note ? ' — ' + note : ''}`);
+    if (val === 'warn') criticita.push(`DA MONITORARE: ${v.testo}${note ? ' — ' + note : ''}`);
+    vociRisposte.push(`[${val.toUpperCase()}] ${v.testo}${note ? ' (nota: ' + note + ')' : ''}`);
+  }));
+
+  const score = maxPunti > 0 ? Math.round((totPunti / maxPunti) * 100) : 0;
+  const statoGlobale = score >= 75 ? 'VERDE — Impianto in buone condizioni' : score >= 45 ? 'GIALLO — Impianto da monitorare' : 'ROSSO — Impianto in stato critico';
+
+  const prompt = `Sei un tecnico specializzato di Termoflex Srl. Hai appena completato un'ispezione di un ${nomiTipo[tipoAttivo]} presso ${cliente} in data ${data}. Ore macchina: ${ore}.
+
+RISULTATI ISPEZIONE (punteggio: ${score}/100 — ${statoGlobale}):
+${vociRisposte.join('\n')}
+
+Genera un verbale di audit professionale in formato JSON con questa struttura ESATTA (solo JSON, nessun testo aggiuntivo):
+{
+  "titolo": "Verbale di audit — tipo impianto e cliente (max 8 parole)",
+  "stato_globale": "verde|giallo|rosso",
+  "sintesi": "2-3 frasi che sintetizzano lo stato generale dell'impianto in modo chiaro e professionale",
+  "criticita": [
+    {"gravita": "alta|media", "descrizione": "descrizione tecnica della criticità", "azione": "azione correttiva consigliata"}
+  ],
+  "raccomandazioni": "4-6 raccomandazioni operative numerate, concrete e prioritizzate. Includi intervalli di manutenzione consigliati.",
+  "prossima_revisione": "indicazione temporale per la prossima ispezione (es. '6 mesi', '12 mesi', 'immediata')"
+}`;
+
+  try {
+    const response = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data_resp = await response.json();
+    const raw = data_resp.content[0].text.replace(/```json|```/g, '').trim();
+    const verbale = JSON.parse(raw);
+    renderVerbale(verbale, cliente, tecnico, data, score, criticita, vociRisposte);
+    salvaStorico(verbale, cliente, tecnico, data, score);
+  } catch(e) {
+    errBox.style.display = 'block';
+    console.error(e);
+  } finally {
+    btn.disabled = false; icon.style.display = 'block'; spin.style.display = 'none';
+    txt.textContent = 'Genera verbale AI';
+  }
+}
+
+function renderVerbale(v, cliente, tecnico, data, score, criticita, voci) {
+  contatore++;
+  const numAud = `AUD-${new Date().getFullYear()}-${String(contatore).padStart(3,'0')}`;
+  const nomiTipo = { compressore: 'Compressore aria compressa', frigo: 'Gruppo frigo / Chiller', meccanico: 'Impianto meccanico' };
+
+  document.getElementById('verb-titolo').textContent = v.titolo;
+  document.getElementById('verb-meta').textContent = `${cliente} · Tecnico: ${tecnico} · ${data}`;
+  document.getElementById('verb-numero').textContent = numAud;
+
+  const statoConf = {
+    verde: { cls: 'stato-verde', label: '✓ Impianto OK', verdictCls: 'verdict-verde' },
+    giallo: { cls: 'stato-giallo', label: '⚡ Da monitorare', verdictCls: 'verdict-giallo' },
+    rosso: { cls: 'stato-rosso', label: '⛔ Stato critico', verdictCls: 'verdict-rosso' }
+  }[v.stato_globale] || { cls: 'stato-giallo', label: '—', verdictCls: 'verdict-giallo' };
+
+  const badge = document.getElementById('verb-stato-badge');
+  badge.className = 'score-stato ' + statoConf.cls;
+  badge.textContent = statoConf.label;
+
+  const verdictCard = document.getElementById('verdict-card');
+  verdictCard.className = 'verdict-card ' + statoConf.verdictCls;
+  document.getElementById('verdict-title').textContent = `Valutazione globale · Punteggio: ${score}/100`;
+  document.getElementById('verdict-text').textContent = v.sintesi;
+
+  const critCard = document.getElementById('criticita-card');
+  const critList = document.getElementById('criticita-list');
+  if (v.criticita && v.criticita.length > 0) {
+    critCard.style.display = 'block';
+    critList.innerHTML = v.criticita.map(c => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${c.gravita==='alta'?'var(--danger)':'var(--warn)'};border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:600;color:${c.gravita==='alta'?'var(--danger)':'var(--warn)'};margin-bottom:4px;">${c.gravita==='alta'?'⛔':'⚡'} ${c.descrizione}</div>
+        <div style="font-size:12px;color:var(--text-muted);">→ ${c.azione}</div>
+      </div>`).join('');
+  } else { critCard.style.display = 'none'; }
+
+  document.getElementById('raccomandazioni-text').textContent = v.raccomandazioni;
+  document.getElementById('riepilogo-voci').innerHTML = voci.map(v => `<div style="padding:3px 0;border-bottom:1px solid rgba(30,45,69,0.3);">${v}</div>`).join('');
+
+  document.getElementById('step-checklist').style.display = 'none';
+  document.getElementById('step-verbale').style.display = 'block';
+  document.getElementById('verbale-output').style.display = 'flex';
+  document.getElementById('verbale-output').style.flexDirection = 'column';
+  document.getElementById('verbale-output').style.gap = '16px';
+}
+
+function salvaStorico(verbale, cliente, tecnico, data, score) {
+  storicoAudit.unshift({ verbale, cliente, tecnico, data, score, tipo: tipoAttivo, id: `AUD-${new Date().getFullYear()}-${String(contatore).padStart(3,'0')}` });
+}
+
+// ─── STORICO ───────────────────────────────────────────────
+function renderStorico() {
+  const tot = storicoAudit.length;
+  document.getElementById('kpi-tot').textContent = tot;
+  document.getElementById('kpi-verde').textContent = storicoAudit.filter(a => a.score >= 75).length;
+  document.getElementById('kpi-giallo').textContent = storicoAudit.filter(a => a.score >= 45 && a.score < 75).length;
+  document.getElementById('kpi-rosso').textContent = storicoAudit.filter(a => a.score < 45).length;
+
+  const container = document.getElementById('storico-container');
+  if (tot === 0) { container.innerHTML = '<div class="storico-empty">Nessun audit completato. Avvia una nuova ispezione.</div>'; return; }
+
+  const nomiTipo = { compressore: 'Compressore', frigo: 'Gruppo frigo', meccanico: 'Impianto meccanico' };
+  container.innerHTML = `<div class="storico-grid">${storicoAudit.map((a,i) => {
+    const colore = a.score >= 75 ? 'var(--green)' : a.score >= 45 ? 'var(--warn)' : 'var(--danger)';
+    const stato = a.score >= 75 ? '✓ Verde' : a.score >= 45 ? '⚡ Giallo' : '⛔ Rosso';
+    return `<div class="storico-card">
+      <div class="storico-card-header">
+        <div class="storico-impianto">${nomiTipo[a.tipo] || a.tipo}</div>
+        <div class="storico-data">${a.data}</div>
+      </div>
+      <div class="storico-cliente">${a.cliente} · ${a.tecnico}</div>
+      <div class="storico-score">
+        <div class="storico-score-bar"><div class="storico-score-fill" style="width:${a.score}%;background:${colore}"></div></div>
+        <div class="storico-score-val">${a.score}/100</div>
+        <span class="score-stato ${a.score>=75?'stato-verde':a.score>=45?'stato-giallo':'stato-rosso'}" style="font-size:10px">${stato}</span>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function tornaSetup() {
+  document.getElementById('step-checklist').style.display = 'none';
+  document.getElementById('step-setup').style.display = 'block';
+}
+
+function nuovaIspezione() {
+  document.getElementById('step-verbale').style.display = 'none';
+  document.getElementById('step-setup').style.display = 'block';
+  document.getElementById('audit-cliente').value = '';
+  document.getElementById('audit-tecnico').value = '';
+  document.getElementById('audit-ore').value = '';
+}
+
+function stampa() { window.print(); }
+</script>
+</body>
+</html>
